@@ -1,18 +1,22 @@
+require('dotenv').config()
 const express = require('express')
 const http = require('http')
 const { Server } = require('socket.io')
 const cors = require('cors')
 
+const PORT = process.env.PORT || 3001
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173'
+
 const app = express()
 const server = http.createServer(app)
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: CLIENT_URL,
     methods: ['GET', 'POST', 'PATCH', 'DELETE']
   }
 })
 
-app.use(cors({ origin: 'http://localhost:5173' }))
+app.use(cors({ origin: CLIENT_URL }))
 app.use(express.json())
 
 let items = []
@@ -22,10 +26,17 @@ let userCount = 0
 // POST /items
 app.post('/items', (req, res) => {
   const { name, user } = req.body
-  const item = { id: nextId++, name, bought: false, addedBy: user }
+  if (!name?.trim()) return res.status(400).json({ error: 'Item name is required' })
+  if (!user?.trim()) return res.status(400).json({ error: 'User is required' })
+
+  const trimmedName = name.trim()
+  const duplicate = items.find(i => i.name.toLowerCase() === trimmedName.toLowerCase())
+  if (duplicate) return res.status(409).json({ error: `"${trimmedName}" is already on the list` })
+
+  const item = { id: nextId++, name: trimmedName, bought: false, addedBy: user }
   items.push(item)
   io.emit('itemsUpdated', items)
-  io.emit('activity', `${user} added ${name}`)
+  io.emit('activity', `${user} added ${trimmedName}`)
   res.status(201).json(item)
 })
 
@@ -33,6 +44,7 @@ app.post('/items', (req, res) => {
 app.patch('/items/:id', (req, res) => {
   const id = parseInt(req.params.id)
   const { user } = req.body
+  if (!user?.trim()) return res.status(400).json({ error: 'User is required' })
   const item = items.find(i => i.id === id)
   if (!item) return res.status(404).json({ error: 'Not found' })
   item.bought = !item.bought
@@ -45,6 +57,7 @@ app.patch('/items/:id', (req, res) => {
 app.delete('/items/:id', (req, res) => {
   const id = parseInt(req.params.id)
   const { user } = req.body
+  if (!user?.trim()) return res.status(400).json({ error: 'User is required' })
   const idx = items.findIndex(i => i.id === id)
   if (idx === -1) return res.status(404).json({ error: 'Not found' })
   const [removed] = items.splice(idx, 1)
@@ -70,6 +83,6 @@ io.on('connection', (socket) => {
   })
 })
 
-server.listen(3001, () => {
-  console.log('Server running on http://localhost:3001')
+server.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`)
 })
