@@ -1,11 +1,17 @@
 import { useAuth } from './hooks/useAuth'
 import { useFamily } from './hooks/useFamily'
+import { useItems } from './hooks/useItems'
 import AuthPage from './components/auth/AuthPage'
 import FamilySetup from './components/family/FamilySetup'
+import Header from './components/Header'
+import AddItemForm from './components/AddItemForm'
+import ItemList from './components/ItemList'
+import ActivityFeed from './components/ActivityFeed'
 
 export default function App() {
   const { user, loading: authLoading, signIn, signUp, signOut } = useAuth()
-  const { family, loading: familyLoading, createFamily, joinFamily } = useFamily(user)
+  const { family, memberCount, loading: familyLoading, createFamily, joinFamily } = useFamily(user)
+  const { items, newItemId, loading: itemsLoading, error, setError, addItem, toggleItem, deleteItem } = useItems(family, user)
 
   if (authLoading || familyLoading) {
     return (
@@ -16,20 +22,31 @@ export default function App() {
   }
 
   if (!user) return <AuthPage onSignIn={signIn} onSignUp={signUp} />
-
   if (!family) return <FamilySetup onCreate={createFamily} onJoin={joinFamily} />
 
+  const username = user.user_metadata?.full_name ?? user.email
+
   return (
-    <div className="min-h-screen bg-orange-100 flex items-center justify-center">
-      <div className="text-center">
-        <p className="text-stone-600 mb-1">Welcome to <strong>{family.name}</strong></p>
-        <p className="text-stone-400 text-sm mb-4">Signed in as {user.email}</p>
-        <button
-          onClick={signOut}
-          className="px-4 py-2 rounded-xl bg-amber-400 text-white font-semibold hover:bg-amber-500 transition"
-        >
-          Sign out
-        </button>
+    <div className="min-h-screen bg-orange-100 py-4 px-3 sm:py-8 sm:px-4">
+      <div className="w-full max-w-lg mx-auto">
+        <Header
+          familyName={family.name}
+          username={username}
+          memberCount={memberCount}
+          onSignOut={signOut}
+        />
+        {error && (
+          <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm flex justify-between items-center">
+            <span>{error}</span>
+            <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 ml-3">✕</button>
+          </div>
+        )}
+        <AddItemForm onAdd={addItem} />
+        {itemsLoading
+          ? <p className="text-center text-stone-400 text-sm py-6">Loading items...</p>
+          : <ItemList items={items} newItemId={newItemId} onToggle={toggleItem} onDelete={deleteItem} />
+        }
+        <ActivityFeed activity={[]} />
       </div>
     </div>
   )

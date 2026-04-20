@@ -3,6 +3,7 @@ import supabase from '../lib/supabase'
 
 export function useFamily(user) {
   const [family, setFamily] = useState(null)
+  const [memberCount, setMemberCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -18,7 +19,17 @@ export function useFamily(user) {
       .eq('user_id', user.id)
       .single()
 
-    setFamily(data ? { ...data.families, role: data.role } : null)
+    const familyData = data ? { ...data.families, role: data.role } : null
+    setFamily(familyData)
+
+    if (familyData) {
+      const { count } = await supabase
+        .from('family_members')
+        .select('*', { count: 'exact', head: true })
+        .eq('family_id', familyData.id)
+      setMemberCount(count ?? 0)
+    }
+
     setLoading(false)
   }
 
@@ -71,5 +82,5 @@ export function useFamily(user) {
     if (!error) setFamily(prev => ({ ...prev, invite_code: newCode }))
   }
 
-  return { family, loading, createFamily, joinFamily, regenerateInviteCode }
+  return { family, memberCount, loading, createFamily, joinFamily, regenerateInviteCode }
 }
