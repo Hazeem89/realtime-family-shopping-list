@@ -13,7 +13,9 @@ export default function Header({ familyName, username, memberCount, inviteCode, 
     <div className="bg-white border border-amber-100 shadow-sm rounded-2xl px-4 py-3 sm:px-5 sm:py-4 mb-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-base sm:text-lg font-bold text-stone-800">🛒 Family Shopping List</h1>
+          <div className="flex items-center gap-2">
+            <img src="/logo.png" alt="Family Shopping List" className="h-8 w-auto" />
+          </div>
           <p className="text-xs text-stone-400">{familyName}</p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 justify-between">

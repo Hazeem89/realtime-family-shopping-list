@@ -10,3 +10,37 @@
 .item-highlight {
   animation: highlight 2s ease-out;
 }
+
+@keyframes cart-horizon {
+  0%   { transform: translateX(-140px) translateY(0px)   scale(1.1);  opacity: 0; }
+  7%   { opacity: 1; }
+  10%  { transform: translateX(-112px) translateY(-8px)  scale(1.02); }
+  20%  { transform: translateX(-84px)  translateY(-16px) scale(0.93); }
+  30%  { transform: translateX(-56px)  translateY(-10px) scale(0.84); }
+  40%  { transform: translateX(-20px)  translateY(0px)   scale(0.76); }
+  50%  { transform: translateX(14px)   translateY(8px)   scale(0.68); }
+  60%  { transform: translateX(50px)   translateY(2px)   scale(0.60); }
+  70%  { transform: translateX(84px)   translateY(-8px)  scale(0.52); }
+  80%  { transform: translateX(112px)  translateY(-16px) scale(0.45); }
+  90%  { transform: translateX(132px)  translateY(-20px) scale(0.39); opacity: 1; }
+  100% { transform: translateX(140px)  translateY(-22px) scale(0.35); opacity: 0; }
+}
+
+.logo-slide {
+  animation: cart-horizon 6s linear infinite;
+}
+
+@keyframes text-shake {
+  0%, 84%  { transform: translateX(0); }
+  86%      { transform: translateX(-5px); }
+  88%      { transform: translateX(5px); }
+  90%      { transform: translateX(-4px); }
+  92%      { transform: translateX(4px); }
+  94%      { transform: translateX(-2px); }
+  96%      { transform: translateX(2px); }
+  98%, 100% { transform: translateX(0); }
+}
+
+.text-shake {
+  animation: text-shake 6s linear infinite;
+}
