@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import supabase from '../lib/supabase'
 
 export function useItems(family, user) {
   const [items, setItems] = useState([])
+  const [activity, setActivity] = useState([])
   const [newItemId, setNewItemId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const profileCache = useRef({})
 
   useEffect(() => {
     if (!family) { setItems([]); setLoading(false); return }
@@ -24,20 +26,35 @@ export function useItems(family, user) {
           .select('id, name, bought, created_at, profiles!added_by(full_name)')
           .eq('id', payload.new.id)
           .single()
-        if (data) setItems(prev => {
-          if (prev.find(i => i.id === data.id)) return prev
-          return [...prev, normalize(data)]
-        })
+        if (data) {
+          setItems(prev => {
+            if (prev.find(i => i.id === data.id)) return prev
+            return [...prev, normalize(data)]
+          })
+          const name = data.profiles?.full_name ?? 'Someone'
+          addActivity(`${name} added ${data.name}`)
+        }
       })
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',
         table: 'items',
         filter: `family_id=eq.${family.id}`
-      }, (payload) => {
+      }, async (payload) => {
+        const updated = payload.new
         setItems(prev => prev.map(i =>
-          i.id === payload.new.id ? { ...i, bought: payload.new.bought } : i
+          i.id === updated.id ? { ...i, bought: updated.bought } : i
         ))
+
+        let actorName = 'Someone'
+        if (updated.bought && updated.bought_by) {
+          actorName = await resolveProfile(updated.bought_by)
+        }
+        setItems(prev => {
+          const item = prev.find(i => i.id === updated.id)
+          if (item) addActivity(`${actorName} ${updated.bought ? 'checked' : 'unchecked'} ${item.name}`)
+          return prev
+        })
       })
       .on('postgres_changes', {
         event: 'DELETE',
@@ -45,12 +62,25 @@ export function useItems(family, user) {
         table: 'items',
         filter: `family_id=eq.${family.id}`
       }, (payload) => {
+        addActivity(`"${payload.old.name}" was removed`)
         setItems(prev => prev.filter(i => i.id !== payload.old.id))
       })
       .subscribe()
 
     return () => supabase.removeChannel(channel)
   }, [family])
+
+  const resolveProfile = async (userId) => {
+    if (profileCache.current[userId]) return profileCache.current[userId]
+    const { data } = await supabase.from('profiles').select('full_name').eq('id', userId).single()
+    const name = data?.full_name ?? 'Someone'
+    profileCache.current[userId] = name
+    return name
+  }
+
+  const addActivity = (msg) => {
+    setActivity(prev => [msg, ...prev].slice(0, 10))
+  }
 
   const fetchItems = async () => {
     setLoading(true)
@@ -113,5 +143,5 @@ export function useItems(family, user) {
     setItems(prev => prev.filter(i => i.id !== id))
   }
 
-  return { items, newItemId, loading, error, setError, addItem, toggleItem, deleteItem }
+  return { items, activity, newItemId, loading, error, setError, addItem, toggleItem, deleteItem }
 }

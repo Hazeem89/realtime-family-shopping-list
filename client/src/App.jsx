@@ -11,7 +11,7 @@ import ActivityFeed from './components/ActivityFeed'
 export default function App() {
   const { user, loading: authLoading, signIn, signUp, signOut } = useAuth()
   const { family, memberCount, loading: familyLoading, createFamily, joinFamily } = useFamily(user)
-  const { items, newItemId, loading: itemsLoading, error, setError, addItem, toggleItem, deleteItem } = useItems(family, user)
+  const { items, activity, newItemId, loading: itemsLoading, error, setError, addItem, toggleItem, deleteItem } = useItems(family, user)
 
   if (authLoading || familyLoading) {
     return (
@@ -46,7 +46,7 @@ export default function App() {
           ? <p className="text-center text-stone-400 text-sm py-6">Loading items...</p>
           : <ItemList items={items} newItemId={newItemId} onToggle={toggleItem} onDelete={deleteItem} />
         }
-        <ActivityFeed activity={[]} />
+        <ActivityFeed activity={activity} />
       </div>
     </div>
   )
