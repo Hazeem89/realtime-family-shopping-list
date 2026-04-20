@@ -18,17 +18,17 @@ export default function Header({ familyName, username, memberCount, inviteCode, 
         </div>
         <div className="flex items-center gap-2 sm:gap-3 justify-between">
           <span className="text-amber-600 text-xs sm:text-sm bg-amber-50 border border-amber-200 px-3 py-1 rounded-full whitespace-nowrap">
-            👥 {memberCount} {memberCount === 1 ? 'member' : 'members'}
+            🟢 {memberCount} online
           </span>
-          <span className="text-stone-400 text-xs whitespace-nowrap">
-            {username} •{' '}
+          <div className="flex items-center gap-2">
+            <span className="text-stone-400 text-xs whitespace-nowrap">{username}</span>
             <button
-              className="inline-flex items-center gap-1 text-xs text-stone-500 hover:text-red-500 transition px-2 py-1 rounded-md hover:bg-red-50 active:bg-red-100 min-h-[44px] sm:min-h-0"
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 border border-red-200 text-red-500 hover:bg-red-100 hover:border-red-300 active:bg-red-200 transition whitespace-nowrap"
               onClick={onSignOut}
             >
               Sign out
             </button>
-          </span>
+          </div>
         </div>
       </div>
 

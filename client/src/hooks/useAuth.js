@@ -3,11 +3,23 @@ import supabase from '../lib/supabase'
 
 export function useAuth() {
   const [user, setUser] = useState(null)
+  const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  const fetchProfile = async (userId) => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', userId)
+      .single()
+    setProfile(data)
+  }
+
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      const currentUser = session?.user ?? null
+      setUser(currentUser)
+      if (currentUser) await fetchProfile(currentUser.id)
       setLoading(false)
     })
 
@@ -32,7 +44,11 @@ export function useAuth() {
             full_name: currentUser.user_metadata?.full_name ?? 'Unknown'
           })
         }
+
+        await fetchProfile(currentUser.id)
       }
+
+      if (event === 'SIGNED_OUT') setProfile(null)
     })
 
     return () => subscription.unsubscribe()
@@ -56,5 +72,5 @@ export function useAuth() {
     await supabase.auth.signOut()
   }
 
-  return { user, loading, signUp, signIn, signOut }
+  return { user, profile, loading, signUp, signIn, signOut }
 }

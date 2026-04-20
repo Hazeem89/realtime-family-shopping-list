@@ -9,7 +9,7 @@ import ItemList from './components/ItemList'
 import ActivityFeed from './components/ActivityFeed'
 
 export default function App() {
-  const { user, loading: authLoading, signIn, signUp, signOut } = useAuth()
+  const { user, profile, loading: authLoading, signIn, signUp, signOut } = useAuth()
   const { family, memberCount, loading: familyLoading, createFamily, joinFamily } = useFamily(user)
   const { items, activity, newItemId, loading: itemsLoading, error, setError, addItem, toggleItem, deleteItem } = useItems(family, user)
 
@@ -24,7 +24,7 @@ export default function App() {
   if (!user) return <AuthPage onSignIn={signIn} onSignUp={signUp} />
   if (!family) return <FamilySetup onCreate={createFamily} onJoin={joinFamily} />
 
-  const username = user.user_metadata?.full_name ?? user.email
+  const username = profile?.full_name ?? user.email
 
   return (
     <div className="min-h-screen bg-orange-100 py-4 px-3 sm:py-8 sm:px-4">
