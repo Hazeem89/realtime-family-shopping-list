@@ -15,6 +15,10 @@ export function useAuth() {
       const currentUser = session?.user ?? null
       setUser(currentUser)
 
+      if (event === 'SIGNED_IN' && window.location.hash.includes('access_token')) {
+        window.history.replaceState(null, '', window.location.pathname)
+      }
+
       if (event === 'SIGNED_IN' && currentUser) {
         const { data: existing } = await supabase
           .from('profiles')
