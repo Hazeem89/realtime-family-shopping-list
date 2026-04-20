@@ -53,12 +53,10 @@ export function useFamily(user) {
   }
 
   const joinFamily = async (inviteCode) => {
-    const { data: familyData, error: findError } = await supabase
-      .from('families')
-      .select('id, name')
-      .eq('invite_code', inviteCode.trim())
-      .single()
+    const { data, error: findError } = await supabase
+      .rpc('get_family_by_invite_code', { code: inviteCode.trim() })
 
+    const familyData = data?.[0]
     if (findError || !familyData) return { message: 'Invalid invite code. Please check and try again.' }
 
     const { error: memberError } = await supabase
