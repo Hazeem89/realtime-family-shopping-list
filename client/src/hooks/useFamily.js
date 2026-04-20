@@ -11,6 +11,28 @@ export function useFamily(user) {
     fetchFamily()
   }, [user])
 
+  useEffect(() => {
+    if (!family?.id) return
+
+    const channel = supabase
+      .channel(`family_members:${family.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'family_members',
+        filter: `family_id=eq.${family.id}`
+      }, async () => {
+        const { count } = await supabase
+          .from('family_members')
+          .select('*', { count: 'exact', head: true })
+          .eq('family_id', family.id)
+        setMemberCount(count ?? 0)
+      })
+      .subscribe()
+
+    return () => supabase.removeChannel(channel)
+  }, [family?.id])
+
   const fetchFamily = async () => {
     setLoading(true)
     const { data } = await supabase
