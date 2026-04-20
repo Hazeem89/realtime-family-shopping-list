@@ -33,6 +33,8 @@ export default function App() {
           familyName={family.name}
           username={username}
           memberCount={memberCount}
+          inviteCode={family.invite_code}
+          isAdmin={family.role === 'admin'}
           onSignOut={signOut}
         />
         {error && (

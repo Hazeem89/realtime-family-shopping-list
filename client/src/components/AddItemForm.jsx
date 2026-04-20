@@ -16,6 +16,7 @@ export default function AddItemForm({ onAdd }) {
           className="flex-1 min-w-0 px-4 py-3 rounded-xl bg-orange-50 border border-orange-200 text-stone-700 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-300 text-base"
           placeholder="Add an item..."
           value={value}
+          autoComplete="off"
           onChange={e => setValue(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleAdd()}
         />
