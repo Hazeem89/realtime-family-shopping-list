@@ -2,6 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body {
+  min-height: 100%;
+}
+
+body {
+  background-color: rgb(255 237 213);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url('/background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.25;
+  z-index: -1;
+}
+
+body.bg-out::before {
+  background-image: url('/background-out.png');
+}
+
 @keyframes highlight {
   0%   { background-color: rgba(250, 204, 21, 0.4); }
   100% { background-color: transparent; }

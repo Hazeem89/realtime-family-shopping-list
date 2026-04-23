@@ -1,6 +1,6 @@
 export default function ItemRow({ item, isNew, onToggle, onDelete }) {
   return (
-    <li className={`flex items-center gap-3 px-2 py-2 sm:px-3 rounded-xl transition ${isNew ? 'item-highlight' : 'hover:bg-orange-50 active:bg-orange-100'}`}>
+    <li className={`flex items-center gap-3 px-2 py-2 sm:px-3 rounded-xl transition ${isNew ? 'item-highlight' : 'hover:bg-white/40 active:bg-white/60'}`}>
       <button
         onClick={() => onToggle(item)}
         className="flex items-center justify-center min-w-[44px] min-h-[44px]"

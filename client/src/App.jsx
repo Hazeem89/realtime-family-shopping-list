@@ -15,7 +15,7 @@ export default function App() {
 
   if (authLoading || familyLoading) {
     return (
-      <div className="min-h-screen bg-orange-100 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <p className="text-stone-400 text-sm">Loading...</p>
       </div>
     )
@@ -27,7 +27,7 @@ export default function App() {
   const username = profile?.full_name ?? user.email
 
   return (
-    <div className="min-h-screen bg-orange-100 py-4 px-3 sm:py-8 sm:px-4">
+    <div className="min-h-screen py-4 px-3 sm:py-8 sm:px-4">
       <div className="w-full max-w-lg mx-auto">
         <Header
           familyName={family.name}

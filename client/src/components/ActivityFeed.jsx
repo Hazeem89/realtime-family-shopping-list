@@ -4,10 +4,10 @@ export default function ActivityFeed({ activity }) {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="bg-white border border-amber-100 shadow-sm rounded-2xl overflow-hidden mb-4">
+    <div className="bg-white/70 backdrop-blur-md border border-white/50 shadow-xl rounded-2xl overflow-hidden mb-4">
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between px-4 sm:px-5 py-4 text-left hover:bg-orange-50 active:bg-orange-100 transition min-h-[52px]"
+        className="w-full flex items-center justify-between px-4 sm:px-5 py-4 text-left hover:bg-white/40 active:bg-white/60 transition min-h-[52px]"
       >
         <span className="text-xs font-semibold text-stone-400 uppercase tracking-wider">
           Activity {activity.length > 0 && <span className="ml-1 text-amber-400">({activity.length})</span>}

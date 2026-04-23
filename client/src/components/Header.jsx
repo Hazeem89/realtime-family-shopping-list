@@ -10,7 +10,7 @@ export default function Header({ familyName, username, memberCount, inviteCode, 
   }
 
   return (
-    <div className="bg-white border border-amber-100 shadow-sm rounded-2xl px-4 py-3 sm:px-5 sm:py-4 mb-4">
+    <div className="bg-white/70 backdrop-blur-md border border-white/50 shadow-xl rounded-2xl px-4 py-3 sm:px-5 sm:py-4 mb-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">

@@ -16,7 +16,7 @@ export default function JoinFamily({ onJoin, onSwitch }) {
   }
 
   return (
-    <div className="bg-white border border-amber-100 shadow-sm rounded-2xl px-6 py-8 w-full">
+    <div className="bg-white/70 backdrop-blur-md border border-white/50 shadow-xl rounded-2xl px-6 py-8 w-full">
       <h2 className="text-xl font-bold text-stone-700 mb-2">Join a family</h2>
       <p className="text-stone-400 text-sm mb-6">Enter the invite code shared by your family admin.</p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">

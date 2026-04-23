@@ -16,7 +16,7 @@ export default function SignInForm({ onSignIn, onSwitch }) {
   }
 
   return (
-    <div className="bg-white border border-amber-100 shadow-sm rounded-2xl px-6 py-8 w-full max-w-sm mx-auto">
+    <div className="bg-white/70 backdrop-blur-md border border-white/50 shadow-xl rounded-2xl px-6 py-8 w-full max-w-sm mx-auto">
       <h2 className="text-2xl font-bold text-stone-700 mb-6 text-center">Welcome back</h2>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input

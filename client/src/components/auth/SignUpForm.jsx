@@ -23,7 +23,7 @@ export default function SignUpForm({ onSignUp, onSwitch }) {
 
   if (success) {
     return (
-      <div className="bg-white border border-amber-100 shadow-sm rounded-2xl px-6 py-8 w-full max-w-sm mx-auto text-center">
+      <div className="bg-white/70 backdrop-blur-md border border-white/50 shadow-xl rounded-2xl px-6 py-8 w-full max-w-sm mx-auto text-center">
         <p className="text-2xl mb-2">📬</p>
         <h2 className="text-xl font-bold text-stone-700 mb-2">Check your email</h2>
         <p className="text-stone-400 text-sm">We sent you a confirmation link. Click it to activate your account.</p>
@@ -32,7 +32,7 @@ export default function SignUpForm({ onSignUp, onSwitch }) {
   }
 
   return (
-    <div className="bg-white border border-amber-100 shadow-sm rounded-2xl px-6 py-8 w-full max-w-sm mx-auto">
+    <div className="bg-white/70 backdrop-blur-md border border-white/50 shadow-xl rounded-2xl px-6 py-8 w-full max-w-sm mx-auto">
       <h2 className="text-2xl font-bold text-stone-700 mb-6 text-center">Create account</h2>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
