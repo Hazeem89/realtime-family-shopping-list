@@ -24,6 +24,7 @@ https://family-shopping-list-three.vercel.app/
 - Live online presence — see how many family members are currently active
 - Activity feed showing recent actions (added, checked, removed)
 - Invite code displayed in the header for easy sharing (admin only)
+- One-click WhatsApp invite button to share the app link and invite code with family members
 
 ## Screenshots
 
@@ -58,7 +59,6 @@ client/
     │   ├── AddItemForm.jsx
     │   ├── ItemList.jsx
     │   ├── ItemRow.jsx
-    │   ├── JoinScreen.jsx
     │   └── ActivityFeed.jsx
     ├── App.jsx
     ├── main.jsx

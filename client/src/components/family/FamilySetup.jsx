@@ -12,8 +12,9 @@ export default function FamilySetup({ onCreate, onJoin }) {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center py-8 px-4">
-      <h1 className="text-3xl font-bold text-stone-700 mb-2">🛒 Family Shopping List</h1>
-      <p className="text-stone-400 text-sm mb-8">Set up your family to get started</p>
+      <h1 className="text-4xl font-extrabold mb-8 tracking-tight bg-gradient-to-r from-amber-500 via-orange-400 to-yellow-400 bg-clip-text text-transparent drop-shadow-[0_3px_8px_rgba(0,0,0,0.5)] text-shake">
+        Shopping List
+      </h1>
       <div className="w-full max-w-sm">
         {mode === 'create'
           ? <CreateFamily onCreate={onCreate} onSwitch={() => setMode('join')} />
