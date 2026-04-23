@@ -72,18 +72,28 @@ export function useFamily(user, authLoading) {
     }
   }
 
+  const withTimeout = (query, ms = 10000) =>
+    Promise.race([query, new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))])
+
   const createFamily = async (name) => {
-    const { data: familyData, error: familyError } = await supabase
-      .from('families')
-      .insert({ name, created_by: user.id })
-      .select()
-      .single()
+    let familyData, familyError, memberError
+    try {
+      ;({ data: familyData, error: familyError } = await withTimeout(
+        supabase.from('families').insert({ name, created_by: user.id }).select().single()
+      ))
+    } catch {
+      return { message: 'Connection timed out. Please try again.' }
+    }
 
     if (familyError) return familyError
 
-    const { error: memberError } = await supabase
-      .from('family_members')
-      .insert({ family_id: familyData.id, user_id: user.id, role: 'admin' })
+    try {
+      ;({ error: memberError } = await withTimeout(
+        supabase.from('family_members').insert({ family_id: familyData.id, user_id: user.id, role: 'admin' })
+      ))
+    } catch {
+      return { message: 'Connection timed out. Please try again.' }
+    }
 
     if (memberError) return memberError
 
@@ -92,15 +102,25 @@ export function useFamily(user, authLoading) {
   }
 
   const joinFamily = async (inviteCode) => {
-    const { data, error: findError } = await supabase
-      .rpc('get_family_by_invite_code', { code: inviteCode.trim() })
+    let data, findError, memberError
+    try {
+      ;({ data, error: findError } = await withTimeout(
+        supabase.rpc('get_family_by_invite_code', { code: inviteCode.trim() })
+      ))
+    } catch {
+      return { message: 'Connection timed out. Please try again.' }
+    }
 
     const familyData = data?.[0]
     if (findError || !familyData) return { message: 'Invalid invite code. Please check and try again.' }
 
-    const { error: memberError } = await supabase
-      .from('family_members')
-      .insert({ family_id: familyData.id, user_id: user.id, role: 'member' })
+    try {
+      ;({ error: memberError } = await withTimeout(
+        supabase.from('family_members').insert({ family_id: familyData.id, user_id: user.id, role: 'member' })
+      ))
+    } catch {
+      return { message: 'Connection timed out. Please try again.' }
+    }
 
     if (memberError) return memberError
 
