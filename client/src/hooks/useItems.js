@@ -1,17 +1,21 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import supabase from '../lib/supabase'
 
-const itemsCacheKey = (familyId) => `fsl_items_${familyId}`
+// v2: caches written before sort_order existed would deserialize items with
+// sortOrder === undefined and feed that straight to the comparator.
+const itemsCacheKey = (familyId) => `fsl_items_v2_${familyId}`
+const legacyItemsCacheKey = (familyId) => `fsl_items_${familyId}`
 
 // Every items query selects through this constant, so the row shape reaching
 // normalize() is identical everywhere.
-const ITEM_SELECT = 'id, name, bought, created_at, profiles!added_by(full_name)'
+const ITEM_SELECT = 'id, name, bought, sort_order, created_at, profiles!added_by(full_name)'
 
 // Database row (snake_case) -> React model (camelCase).
 const normalize = (item) => ({
   id: item.id,
   name: item.name,
   bought: item.bought,
+  sortOrder: item.sort_order,
   addedBy: item.profiles?.full_name ?? 'Unknown'
 })
 
@@ -22,8 +26,19 @@ const normalizeChanges = (row) => {
   const changes = {}
   if (row.name !== undefined) changes.name = row.name
   if (row.bought !== undefined) changes.bought = row.bought
+  if (row.sort_order !== undefined) changes.sortOrder = row.sort_order
   return changes
 }
+
+// Mirrors the fetch query's ORDER BY exactly. `bought` is deliberately not a
+// key: checking an item leaves it where it is.
+//
+// The id tiebreak is what makes concurrent moves safe. Two clients can briefly
+// land on the same sort_order, and without a tiebreak they would render the
+// same data in different orders. Comparing undefined sortOrder yields NaN,
+// which is falsy, so a stale cache degrades to id order instead of scrambling.
+const bySortOrder = (a, b) =>
+  (a.sortOrder - b.sortOrder) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
 
 export function useItems(family, user) {
   const [items, setItems] = useState(() => {
@@ -81,6 +96,7 @@ export function useItems(family, user) {
 
   const fetchItems = async () => {
     const cacheKey = itemsCacheKey(family.id)
+    localStorage.removeItem(legacyItemsCacheKey(family.id))
     const hasCached = !!localStorage.getItem(cacheKey)
     if (!hasCached) setLoading(true)
 
@@ -91,7 +107,8 @@ export function useItems(family, user) {
           .from('items')
           .select(ITEM_SELECT)
           .eq('family_id', family.id)
-          .order('created_at', { ascending: true }),
+          .order('sort_order', { ascending: true })
+          .order('id', { ascending: true }),
         timeout
       ])
 
@@ -215,5 +232,20 @@ export function useItems(family, user) {
     removeLocalItem(id)
   }
 
-  return { items, activity, newItemId, loading, error, setError, addItem, toggleItem, deleteItem }
+  // The single choke point for ordering. ItemList never sorts, and no mutation
+  // has to remember to: addItem appends, realtime patches sortOrder in place,
+  // and both land in the right position here.
+  const orderedItems = useMemo(() => [...items].sort(bySortOrder), [items])
+
+  return {
+    items: orderedItems,
+    activity,
+    newItemId,
+    loading,
+    error,
+    setError,
+    addItem,
+    toggleItem,
+    deleteItem
+  }
 }
