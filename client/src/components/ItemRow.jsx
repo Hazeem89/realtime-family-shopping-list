@@ -1,6 +1,29 @@
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+
 export default function ItemRow({ item, isNew, onToggle, onDelete }) {
+  const { setNodeRef, transform, transition, attributes, listeners, isDragging } = useSortable({ id: item.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition
+  }
+
   return (
-    <li className={`flex items-center gap-3 px-2 py-2 sm:px-3 rounded-xl transition ${isNew ? 'item-highlight' : 'hover:bg-white/40 active:bg-white/60'}`}>
+    <li
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center gap-3 px-2 py-2 sm:px-3 rounded-xl transition ${isNew ? 'item-highlight' : 'hover:bg-white/40 active:bg-white/60'} ${isDragging ? 'opacity-50' : ''}`}
+    >
+      <button
+        type="button"
+        {...attributes}
+        {...listeners}
+        className="flex items-center justify-center min-w-[44px] min-h-[44px] touch-none cursor-grab active:cursor-grabbing text-stone-300 hover:text-stone-400"
+        aria-label="Drag to reorder"
+      >
+        ☰
+      </button>
       <button
         onClick={() => onToggle(item)}
         className="flex items-center justify-center min-w-[44px] min-h-[44px]"
