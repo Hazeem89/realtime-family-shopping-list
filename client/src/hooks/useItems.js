@@ -232,6 +232,48 @@ export function useItems(family, user) {
     removeLocalItem(id)
   }
 
+  const withTimeout = (query, ms = 10000) =>
+    Promise.race([query, new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))])
+
+  // prevId/nextId are the neighbours the item should land between in the
+  // ordered list — either may be null at an end. All position arithmetic
+  // happens in move_item; this only mirrors it optimistically so the drag
+  // doesn't wait on a round trip, then reconciles with the server's answer.
+  const moveItem = async (itemId, prevId, nextId) => {
+    setError(null)
+    const snapshot = itemsRef.current
+
+    const prevOrder = prevId ? snapshot.find(i => i.id === prevId)?.sortOrder : undefined
+    const nextOrder = nextId ? snapshot.find(i => i.id === nextId)?.sortOrder : undefined
+    const optimisticOrder =
+      prevOrder !== undefined && nextOrder !== undefined ? (prevOrder + nextOrder) / 2
+      : prevOrder !== undefined ? prevOrder + 100
+      : nextOrder !== undefined ? nextOrder - 100
+      : 100
+
+    patchItem(itemId, { sortOrder: optimisticOrder })
+
+    try {
+      const { data, error } = await withTimeout(
+        supabase.rpc('move_item', {
+          p_item_id: itemId,
+          p_prev_item_id: prevId ?? null,
+          p_next_item_id: nextId ?? null
+        })
+      )
+
+      if (error) throw error
+
+      // The server may have renormalized the whole family (gap collapse),
+      // so its answer for this row's position is authoritative — but other
+      // rows' sortOrder already arrive individually via realtime UPDATEs.
+      patchItem(itemId, { sortOrder: data })
+    } catch (err) {
+      setItems(snapshot)
+      setError(err.message === 'timeout' ? 'Connection timed out. Please try again.' : err.message)
+    }
+  }
+
   // The single choke point for ordering. ItemList never sorts, and no mutation
   // has to remember to: addItem appends, realtime patches sortOrder in place,
   // and both land in the right position here.
@@ -246,6 +288,7 @@ export function useItems(family, user) {
     setError,
     addItem,
     toggleItem,
-    deleteItem
+    deleteItem,
+    moveItem
   }
 }
