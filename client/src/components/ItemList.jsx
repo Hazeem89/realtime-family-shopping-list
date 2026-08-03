@@ -1,12 +1,20 @@
-import { DndContext, closestCenter, KeyboardSensor, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { useState } from 'react'
+import { createPortal } from 'react-dom'
+import { DndContext, DragOverlay, closestCenter, KeyboardSensor, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, sortableKeyboardCoordinates, arrayMove } from '@dnd-kit/sortable'
-import ItemRow from './ItemRow'
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
+import ItemRow, { ItemRowOverlay } from './ItemRow'
+
+const modifiers = [restrictToVerticalAxis]
 
 // dnd-kit reports a drag as (draggedId, droppedOnId) — a position, not a
 // move. onMove needs the neighbours the item should land between, so this
 // is the one place that translates an index-based drop into prev/next ids.
 // Everything past this point is server-side arithmetic (see useItems.moveItem).
 export default function ItemList({ items, newItemId, onToggle, onDelete, onMove }) {
+  const [activeId, setActiveId] = useState(null)
+  const activeItem = items.find(i => i.id === activeId)
+
   // Not PointerSensor alongside TouchSensor — PointerSensor already handles
   // touch, and registering both double-fires on touch devices. A distance
   // tolerance (rather than a long-press delay) is enough to avoid accidental
@@ -18,6 +26,7 @@ export default function ItemList({ items, newItemId, onToggle, onDelete, onMove 
   )
 
   const handleDragEnd = ({ active, over }) => {
+    setActiveId(null)
     if (!over || active.id === over.id) return
 
     const oldIndex = items.findIndex(i => i.id === active.id)
@@ -40,7 +49,16 @@ export default function ItemList({ items, newItemId, onToggle, onDelete, onMove 
       {items.length === 0 && (
         <p className="text-stone-400 text-center py-6 text-sm">No items yet. Add something!</p>
       )}
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      {/* autoScroll defaults to true and picks up the page's own scroll,
+          which is the only scrollable ancestor here — nothing to configure. */}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        modifiers={modifiers}
+        onDragStart={({ active }) => setActiveId(active.id)}
+        onDragEnd={handleDragEnd}
+        onDragCancel={() => setActiveId(null)}
+      >
         <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
           <ul className="space-y-1">
             {items.map(item => (
@@ -54,6 +72,17 @@ export default function ItemList({ items, newItemId, onToggle, onDelete, onMove 
             ))}
           </ul>
         </SortableContext>
+        {/* Portaled to body: this card has backdrop-blur (a backdrop-filter),
+            which creates a containing block for position:fixed descendants.
+            DragOverlay is fixed-positioned, so left inline it renders offset
+            from the pointer instead of tracking it. React context still
+            reaches across the portal, so DndContext/useDndContext are unaffected. */}
+        {createPortal(
+          <DragOverlay modifiers={modifiers}>
+            {activeItem && <ItemRowOverlay item={activeItem} />}
+          </DragOverlay>,
+          document.body
+        )}
       </DndContext>
     </div>
   )
